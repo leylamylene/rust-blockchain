@@ -1,3 +1,12 @@
+extern crate bincode;
+use bincode::{serialize, deserialize};
+use crate::proof_of_work::ProofOfWork;
+use crate::transaction::Transactioon;
+use serde::{Deserialize,Serialize};
+use sled::IVec;
+
+
+
 pub struct Block {
   timestamp : i64, // time when the block was created
   pre_block_hash : String, //haash value of the previous block
@@ -6,6 +15,7 @@ pub struct Block {
   nonce : i64,
   height : usize, // the position of the current block within the blockchain
 }
+
 
 
 impl Block {
@@ -19,11 +29,71 @@ impl Block {
       height,
     };
    
-
+  
     let pow = ProofOfWork::new_proof_of_work(block.clone());
     let (nonce, hash) = pow.run();
     block.nonce = nonce;
     block.hash = hash;
     return block;
+  }
+
+  pub fn deserialize(bytes:&[u8])->Block {
+    bincode::deserialize(bytes).unwrap()
+  }
+
+  
+  pub fn serialize(&self) -> Vec<u8> {
+    bincode::serialize(self).unwrap().to_vec()
+  }
+
+  pub fn get_transactions(&self)-> &[Transaction] {
+    self.transactions.as_slice()
+  }
+
+  pub fn get_pre_block_hash(&self) ->String  {
+    self.pre_block_hash.clone()
+  }
+
+  pub fn get_hash(&self) ->&str {
+    self.hash.as_str()
+  }
+
+  pub fn get_hash_bytes(&self) -> Vec<u8> {
+    self.hash.as_bytes().to_vec()
+  }
+
+
+  pub fn get_timestamp(&self) ->i64 {
+    self.timestamp
+  }
+  pub fn get_height(&self) -> usize {
+    self.height
+  }
+
+  pub fn hash_transactions(&self)-> Vec<u8> {
+    let mut txhashs = vec![];
+    for transaction in &self.transactions {
+      txhashs.extend(transaction.get_id());
+    }
+
+    crate::sha256_digest(txhashs.as_slice())
+  }
+
+
+  pub fn generate_genesis_block(transaction:&Transaction) ->Block {
+    let transactions = vec![transaction.clone()];
+    return Block::new_block(String::from("None") , &transactions , 0);
+  }
+
+
+
+
+}
+
+
+impl From<Block> for IVec {
+  fn from(b: Block) -> Self {
+      let bytes = bincode::serialize(&b).unwrap();
+      Self::from(bytes)
   }
 }
