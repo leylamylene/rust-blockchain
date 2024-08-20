@@ -1,12 +1,12 @@
 extern crate bincode;
 use bincode::{serialize, deserialize};
-use crate::proof_of_work::ProofOfWork;
-use crate::transaction::Transactioon;
+use crate::{ProofOfWork , Transaction};
 use serde::{Deserialize,Serialize};
 use sled::IVec;
 
 
 
+#[derive(Clone,Serialize,Deserialize)]
 pub struct Block {
   timestamp : i64, // time when the block was created
   pre_block_hash : String, //haash value of the previous block
@@ -23,7 +23,7 @@ impl Block {
     let mut block = Block{
       timestamp : crate::current_timestamp(),
       pre_block_hash,
-      hash : String::new(""),
+      hash : String::new(),
       transactions : transactions.to_vec(),
       nonce :0,
       height,

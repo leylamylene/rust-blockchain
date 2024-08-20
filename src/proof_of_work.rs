@@ -1,3 +1,4 @@
+use crate::Block;
 pub struct ProofOfWork {
   block : Block,
   target : BigInt
