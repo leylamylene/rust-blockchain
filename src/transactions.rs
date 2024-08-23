@@ -1,5 +1,5 @@
-use crate::wallet::hash_pub_key;
-use crate::{base58_decode, wallet, Blockchain, UTXOSet, Wallets};
+use crate::wallets::{hash_pub_key, ADDRESS_CHECK_SUM_LEN};
+use crate::{base58_decode, Blockchain, UTXOSet, Wallets};
 use data_encoding::HEXLOWER;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
@@ -41,7 +41,7 @@ impl TXInput {
 
 
     pub fn uses_key(&self, pub_key_hash: &[u8]) -> bool {
-        let locking_hash = wallet::hash_pub_key(self.pub_key.as_slice());
+        let locking_hash = hash_pub_key(self.pub_key.as_slice());
         return locking_hash.eq(pub_key_hash);
     }
 }
@@ -74,7 +74,7 @@ impl TXOutput {
 
     fn lock(&mut self, address: &str) {
         let payload = base58_decode(address);
-        let pub_key_hash = payload[1..payload.len() - wallet::ADDRESS_CHECK_SUM_LEN].to_vec();
+        let pub_key_hash = payload[1..payload.len() - ADDRESS_CHECK_SUM_LEN].to_vec();
         self.pub_key_hash = pub_key_hash;
     }
 
